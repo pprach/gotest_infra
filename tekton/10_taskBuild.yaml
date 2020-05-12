@@ -4,23 +4,43 @@ metadata:
   name: build-task
 spec:
   params:
-    - name: ref
-      type: string
-    - name: path
-      type: string
-      default: $(resources.inputs.source-repo.path)
+  - name: ref
+    type: string
+  - name: sha
+    type: string
+  - default: $(resources.inputs.source-repo.path)
+    name: path
+    type: string
+  - default: pprach/test
+    name: dockerRegistry
+    type: string
   resources:
     inputs:
-      - name: source-repo
-        type: git
+    - name: source-repo
+      type: git
   steps:
-    - name: dockertag-create
-      workingDir: "$(params.path)"
-      image: alpine/git:v2.24.3
-      script: |
-        #!/bin/sh
-        pwd
-        git rev-parse --short HEAD > git_sha
-        git rev-parse --short HEAD
-        echo $(resources.inputs.source-repo.path)
-        echo $(params.ref)
+  - image: docker:dind
+    name: dockerfile-build
+    resources: {}
+    script: |
+      #!/usr/bin/env sh
+      docker build -t $(params.dockerRegistry):$(params.sha) .
+    volumeMounts:
+    - mountPath: /var/run/docker.sock
+      name: docker-socket
+    workingDir: $(params.path)
+  - image: docker:dind
+    name: dockerimage-push
+    resources: {}
+    script: |
+      #!/usr/bin/env sh
+      docker push $(params.dockerRegistry):$(params.sha)
+    volumeMounts:
+    - mountPath: /var/run/docker.sock
+      name: docker-socket
+    workingDir: $(params.path)
+  volumes:
+  - hostPath:
+      path: /var/run/docker.sock
+      type: Socket
+    name: docker-socket
