@@ -1,39 +1,53 @@
-apiVersion: tekton.dev/v1alpha1
+apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"tekton.dev/v1alpha1","kind":"Pipeline","metadata":{"annotations":{},"name":"app-build-pipeline","namespace":"team-a-building"},"spec":{"params":[{"name":"ref"},{"name":"sha"}],"resources":[{"name":"source-repo","type":"git"},{"name":"config-repo","type":"git"}],"tasks":[{"name":"build-app-dockerimage","params":[{"name":"ref","value":"$(params.ref)"},{"name":"sha","value":"$(params.sha)"}],"resources":{"inputs":[{"name":"source-repo","resource":"source-repo"}]},"taskRef":{"name":"build-task"}},{"name":"update-config","params":[{"name":"ref","value":"$(params.ref)"},{"name":"sha","value":"$(params.sha)"}],"resources":{"inputs":[{"name":"config-repo","resource":"config-repo"}]},"runAfter":["build-app-dockerimage"],"taskRef":{"name":"update-config"}}]}}
+  creationTimestamp: "2020-05-09T09:57:51Z"
+  generation: 15
   name: app-build-pipeline
+  namespace: team-a-building
+  resourceVersion: "2580621"
+  selfLink: /apis/tekton.dev/v1beta1/namespaces/team-a-building/pipelines/app-build-pipeline
+  uid: 423cdffc-9951-4962-8b93-94a7b6a6c2a3
 spec:
   params:
-    - name: ref
+  - name: ref
+    type: string
+  - name: sha
+    type: string
   resources:
-    - name: source-repo
-      type: git
+  - name: source-repo
+    type: git
+  - name: config-repo
+    type: git
   tasks:
-    - name: build-app-dockerimage
-      taskRef:
-        name: build-task
-      resources:
-        inputs:
-        - name: source-repo
-          resource: source-repo
-      params:
-        - name: ref
-          value: $(params.ref)
-#    - name: deploy-app
-#      taskRef:
-#        name: deploy-task
-#      runAfter:
-#      - build-app-dockerimage
-#      resources:
-#        inputs:
-#        - name: git-repo
-#          resource: git-repo
-#    - name: test-app
-#      taskRef:
-#        name: test-task
-#      runAfter:
-#      - deploy-app
-#      resources:
-#        inputs:
-#        - name: git-repo
-#          resource: git-repo
+  - name: build-app-dockerimage
+    params:
+    - name: ref
+      value: $(params.ref)
+    - name: sha
+      value: $(params.sha)
+    resources:
+      inputs:
+      - name: source-repo
+        resource: source-repo
+    taskRef:
+      kind: Task
+      name: build-task
+  - name: update-config
+    params:
+    - name: ref
+      value: $(params.ref)
+    - name: sha
+      value: $(params.sha)
+    resources:
+      inputs:
+      - name: config-repo
+        resource: config-repo
+    runAfter:
+    - build-app-dockerimage
+    taskRef:
+      kind: Task
+      name: update-config
