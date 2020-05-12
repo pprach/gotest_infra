@@ -1,0 +1,24 @@
+apiVersion: tekton.dev/v1alpha1
+kind: Task
+metadata:
+  name: build-task
+spec:
+  params:
+    - name: ref
+      type: string
+    - name: path
+      type: string
+      default: $(resources.inputs.source-repo.path)
+    - name: body
+      type: string
+  resources:
+    inputs:
+      - name: source-repo
+        type: git
+  steps:
+    - name: dockertag-create
+      workingDir: "$(params.path)"
+      image: stedolan/jq
+      script: |
+        #!/bin/bash
+        echo '$(params.body)'

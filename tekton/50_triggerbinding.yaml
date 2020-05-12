@@ -5,8 +5,15 @@ metadata:
 spec:
   params:
   - name: gitrevision
-    value: $(body.head_commit.id)
+    #value: $(body.head_commit.id)
+    #value: $(body.pull_request.head.sha)
+    value: $(body.extensions.sha)
   - name: gitrepositoryurl
-    value: $(body.repository.url)
+    value: $(body.repository.html_url)
   - name: gitref
-    value: $(body.ref)
+    #value: $(body.ref)
+    value: $(body.extensions.ref)
+  - name: eventtype
+    value: $(header.X-GitHub-Event)
+  - name: commentsurl
+    value: $(body.extensions.comments_url)

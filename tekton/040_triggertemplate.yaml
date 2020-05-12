@@ -7,8 +7,7 @@ spec:
   - name: gitrevision
   - name: gitrepositoryurl
   - name: gitref
-  - name: eventtype
-  - name: commentsurl
+  - name: body
   resourcetemplates:
   - apiVersion: tekton.dev/v1beta1
     kind: PipelineRun
@@ -30,22 +29,9 @@ spec:
           - name: revision
             value: $(params.gitrevision)
           - name: url
-            #value: https://github.com/pprach/gotest
             value: $(params.gitrepositoryurl)
-      - name: config-repo
-        resourceSpec:
-          type: git
-          params:
-          - name: revision
-            value: master
-          - name: url
-            value: https://github.com/pprach/gotest_infra
       params:
       - name: ref
         value: $(params.gitref)
-      - name: sha
-        value: $(params.gitrevision)
-      - name: eventtype
-        value: $(params.eventtype)
-      - name: commentsurl
-        value: $(params.commentsurl)
+      - name: body
+        value: $(params.body)

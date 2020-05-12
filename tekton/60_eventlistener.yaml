@@ -6,7 +6,35 @@ spec:
   serviceType: NodePort
   serviceAccountName: default
   triggers:
-    - name: my-trig
+    - name: my-trig-pr
+      interceptors:
+        - cel:
+            #filter: "header.match('X-GitHub-Event', 'pull_request')"
+            filter: "header.canonical('X-GitHub-Event') == 'pull_request'"       
+            overlays:
+            - key: extensions.sha
+              expression: "body.pull_request.head.sha"
+            #- key: body.ref
+            - key: extensions.ref
+              expression: "body.pull_request.head.ref"
+            - key: "extensions.comments_url"
+              expression: "body.pull_request.comments_url"
+      bindings:
+        - name: pipeline-binding
+      template:
+        name: trigger-pipeline-template
+    - name: my-trig-push
+      interceptors:
+        - cel:
+            filter: "header.canonical('X-GitHub-Event') == 'push'"       
+            overlays:
+            - key: "extensions.sha"
+              expression: "body.head_commit.id"
+            #- key: body.ref
+            - key: "extensions.ref"
+              expression: "body.ref"
+            - key: "extensions.comments_url"
+              expression: "body.head_commit.id"
       bindings:
         - name: pipeline-binding
       template:
